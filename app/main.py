@@ -52,7 +52,12 @@ def cantidad_filmaciones_dia(name_day: str):
 
     return f'{sum(cantidad)} cantidad de películas fueron estrenadas en los días {name_day}'
 
-"""
+
 @app.get('/score_titulo/{title}')
 def score_titulo(title: str):
-"""
+    movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
+
+    movie_index = movies.index.get_indexer_for((movies[movies.title == title].index)).tolist()
+    movie = movies.iloc[movie_index[0]]
+
+    return f"La película {movie['title']} fue estrenada en el año {movie['release_year']} con un score/popularidad de {movie['vote_average']}"
