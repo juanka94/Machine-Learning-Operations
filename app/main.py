@@ -3,6 +3,8 @@ import pandas as pd
 from fastapi import FastAPI
 
 MOVIES_DATASET_PATH = '../assets/movies.csv'
+ACTORS_DATASET_PATH = '../assets/actors.csv'
+DIRECTORS_DATASET_PATH = '../assets/directors.csv'
 
 app = FastAPI()
 
@@ -62,6 +64,7 @@ def score_titulo(title: str):
 
     return f"La película {movie['title']} fue estrenada en el año {movie['release_year']} con un score/popularidad de {movie['vote_average']}"
 
+
 @app.get('/votos_titulo/{title}')
 def votos_titulo(title: str):
     movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
@@ -73,3 +76,13 @@ def votos_titulo(title: str):
         return f"La película {movie['title']} fue estrenada en el año {movie['release_year']}. La misma cuenta con un total de {movie['vote_count']} valoraciones, con un promedio de {movie['vote_average']}"
     else:
         return f"La película {movie['title']} no cumple con las 2000 minimas valoraciones para arrojar el resultado"
+    
+
+@app.get('/get_actor/{name_actor}')
+def get_actor(name_actor: str):
+    actors = pd.read_csv(ACTORS_DATASET_PATH, delimiter=',', encoding='utf-8')
+
+    actor_index = actors.index.get_indexer_for((actors[actors.cast == name_actor].index)).tolist()
+    actor = actors.iloc[actor_index[0]]
+
+    return f"El actor {actor['cast']} ha participado de {actor['movies']} cantidad de filmaciones, el mismo ha conseguido un revenue de {actor['revenue']} con un promedio de {actor['revenue']/actor['movies']} por filmación"
