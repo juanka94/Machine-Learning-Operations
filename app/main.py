@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 
 from fastapi import FastAPI
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 MOVIES_DATASET_PATH = '../assets/movies.csv'
 ACTORS_DATASET_PATH = '../assets/actors.csv'
@@ -88,6 +90,7 @@ def get_actor(name_actor: str):
 
     return f"El actor {actor['cast']} ha participado de {actor['movies']} cantidad de filmaciones, el mismo ha conseguido un revenue de {actor['revenue']} con un promedio de {actor['revenue']/actor['movies']} por filmación"
 
+
 @app.get('/get_director/{name_director}')
 def get_director(name_director: str):
     directors = pd.read_csv(DIRECTORS_DATASET_PATH,delimiter=',', encoding='utf-8')
@@ -116,3 +119,13 @@ def get_director(name_director: str):
 
     return director_dic
 
+
+@app.get('/recomendacion/{title}')
+def recomendacion(title: str):
+    movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
+
+    movies['similarity'] = movies['title'].apply(lambda x: fuzz.ratio(x, title))
+
+    recommended_movies = movies.sort_values(['similarity', 'vote_average'], ascending=[False, False])
+
+    return recommended_movies.head(5)[['title']]
