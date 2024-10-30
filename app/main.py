@@ -13,11 +13,14 @@ app = FastAPI()
 
 @app.get('/')
 def root():
-    return {"Hello": "World"}
+    return f"Proyecto Individual MLOps - Juan Carlos Ruiz Navarro"
 
 
 @app.get('/cantidad_filmaciones_mes/{name_month}')
 def cantidad_filmaciones_mes(name_month: str):
+    """
+    Se ingresa el nombre del mes y regresa la cantidad de peliculas que se estrenaron en dicho mes.
+    """
 
     cantidad = 0
     count = 0
@@ -40,6 +43,9 @@ def cantidad_filmaciones_mes(name_month: str):
 
 @app.get('/cantidad_filmaciones_dia/{name_day}')
 def cantidad_filmaciones_dia(name_day: str):
+    """
+    Se ingresa el nombre del dia y regresa la cantidad de peliculas estrenadas en dicho día.
+    """
 
     cantidad = 0
     count = 0
@@ -60,6 +66,10 @@ def cantidad_filmaciones_dia(name_day: str):
 
 @app.get('/score_titulo/{title}')
 def score_titulo(title: str):
+    """
+    Ingresa el nombre de una pelicula y regresa el año en que fue estrenada junto con el score obtenido.
+    """
+
     movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
 
     movie_index = movies.index.get_indexer_for((movies[movies.title == title].index)).tolist()
@@ -70,6 +80,11 @@ def score_titulo(title: str):
 
 @app.get('/votos_titulo/{title}')
 def votos_titulo(title: str):
+    """
+    Ingresa el nombre de la pelicula y en caso que tenga mas de 2000 valoraciones regresa la cantidad de valoraciones con su score total,
+    en caso de tener menos de 2000 valoraciones solo se envia mensaje que dicha pelicula no tiene las suficientes valoraciones.
+    """
+
     movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
 
     movie_index = movies.index.get_indexer_for((movies[movies.title == title].index)).tolist()
@@ -83,6 +98,10 @@ def votos_titulo(title: str):
 
 @app.get('/get_actor/{name_actor}')
 def get_actor(name_actor: str):
+    """
+    Ingresa el nombre de un actor y regresa la cantidad de peliculas en las que ha participado junto con el revenue total que ha obtenido en dichas peliculas.
+    """
+
     actors = pd.read_csv(ACTORS_DATASET_PATH, delimiter=',', encoding='utf-8')
 
     actor_index = actors.index.get_indexer_for((actors[actors.cast == name_actor].index)).tolist()
@@ -93,6 +112,39 @@ def get_actor(name_actor: str):
 
 @app.get('/get_director/{name_director}')
 def get_director(name_director: str):
+    """
+    Ingresa el nombre de un director y regresa un diccionario estructurado de la siguiente manera:
+    {
+        "Name": "Tim Burton", #Nombre del director
+        "Success": 6.65, #Promedio de valoraciones de todas sus peliculas
+        "Movies": [ #Lista de diccionarios con las peliculas del director
+            {
+                "title": {
+                    "74": "Batman"
+                },
+                "release_date": {
+                    "74": "1989-06-23"
+                },
+                "return": {
+                    "74": 11.7528264
+                },
+                "budget": {
+                    "74": 35000000
+                },
+                "revenue": {
+                    "74": 411348924
+                },
+                "vote_average": {
+                    "74": 7
+                }
+            },
+            .
+            .
+            .
+        ]
+    }
+    """
+
     directors = pd.read_csv(DIRECTORS_DATASET_PATH,delimiter=',', encoding='utf-8')
     movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
 
@@ -122,6 +174,9 @@ def get_director(name_director: str):
 
 @app.get('/recomendacion/{title}')
 def recomendacion(title: str):
+    """
+    Ingresa el titulo de una pelicula y regresa las 5 peliculas mas similares en el titulo y que sean las mejor valoradas.
+    """
     movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
 
     movies['similarity'] = movies['title'].apply(lambda x: fuzz.ratio(x, title))
