@@ -112,56 +112,53 @@ def get_director(name_director: str):
     """
     Ingresa el nombre de un director y regresa un diccionario estructurado de la siguiente manera:
     {
-        "Name": "Tim Burton", #Nombre del director
-        "Success": 6.65, #Promedio de valoraciones de todas sus peliculas
-        "Movies": [ #Lista de diccionarios con las peliculas del director
-            {
-                "title": {
-                    "74": "Batman"
-                },
-                "release_date": {
-                    "74": "1989-06-23"
-                },
-                "return": {
-                    "74": 11.7528264
-                },
-                "budget": {
-                    "74": 35000000
-                },
-                "revenue": {
-                    "74": 411348924
-                },
-                "vote_average": {
-                    "74": 7
-                }
-            },
-            .
-            .
-            .
-        ]
-    }
+  "Name": "Michael Bay",
+  "Success": [
+    [6.21428571428571]
+  ],
+  "Movies": [
+    [
+      "Bad Boys",
+      "1995-04-07",
+      7.44247494736842, 19000000, 141407024, 6.5],
+    [
+      "Bad Boys II",
+      "2003-07-18",
+      2.10261196923077, 130000000, 273339556, 6.3],
+    [
+      "Transformers",
+      "2007-06-27",
+      4.73139853333333, 150000000, 709709780, 6.6],
+    [
+      "Transformers: Revenge of the Fallen",
+      "2009-06-19",
+      5.57531485333333, 150000000, 836297228, 6],
+    [
+      "Transformers: Dark of the Moon",
+      "2011-06-28",
+      5.76280510769231, 195000000, 1123746996, 6.1],
+    [
+      "Transformers: Age of Extinction",
+      "2014-06-25",
+      5.19716712857143, 210000000, 1091405097, 5.8],
+    [
+      "Transformers: The Last Knight",
+      "2017-06-21",
+      2.32670055, 260000000, 604942143, 6.2]
+  ]
+}
     """
 
-    directors = pd.read_csv(DIRECTORS_DATASET_PATH,delimiter=',', encoding='utf-8')
-    movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
-
-    director_movies = []
-    director_success = []
-
-    movies_id = directors[directors.name == name_director]['id']
-    for movie in movies_id:
-        #movie_index = movies.index.get_indexer_for((movies[movies['id'] == movie].index)).tolist()
-        director_movies.append(movies.loc[movies['id'] == movie].filter(['title', 'release_date', 'return', 'budget', 'revenue', 'vote_average']))
-    
-    for movie in director_movies:
-       director_success.append(movie['vote_average'].tolist()[0])
-
-    director_success = sum(director_success)/len(director_success)
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        director = conn.execute("SELECT m.title, m.release_date, m.return, m.budget, m.revenue, m.vote_average FROM directors d JOIN movies m ON d.id = m.id WHERE d.name = ?", (name_director,)).fetchall()
+        success = conn.execute("SELECT avg(vote_average) FROM directors d JOIN movies m ON d.id = m.id WHERE d.name = ?", (name_director,)).fetchall()
+        print(director)
 
     director_dic = {
         'Name': name_director,
-        'Success': director_success,
-        'Movies': director_movies
+        'Success': success,
+        'Movies': director
     }
 
     print(director_dic)
