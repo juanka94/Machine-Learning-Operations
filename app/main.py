@@ -7,8 +7,6 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
 MOVIES_DATASET_PATH = '../assets/movies.csv'
-ACTORS_DATASET_PATH = '../assets/actors.csv'
-DIRECTORS_DATASET_PATH = '../assets/directors.csv'
 DB_PATH = '../DB/cinema.db'
 
 app = FastAPI()
@@ -34,7 +32,6 @@ def cantidad_filmaciones_mes(name_month: str):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cantidad = conn.execute("SELECT count(*) FROM movies WHERE strftime('%m', release_date) = ?", (num_month,)).fetchone()
-        print(cantidad)
     
     return f'{sum(cantidad)} cantidad de películas fueron estrenadas en el mes de {name_month}'
 
@@ -56,7 +53,6 @@ def cantidad_filmaciones_dia(name_day: str):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cantidad = conn.execute("SELECT count(*) FROM movies WHERE strftime('%w', release_date) = ?", (num_weekday,)).fetchone()
-        print(cantidad)
 
     return f'{sum(cantidad)} cantidad de películas fueron estrenadas en los días {name_day}'
 
@@ -70,7 +66,6 @@ def score_titulo(title: str):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         movie = conn.execute("SELECT release_year, vote_average FROM movies WHERE title = ?", (title,)).fetchone()
-        print(movie)
 
     return f"La película {title} fue estrenada en el año {movie[0]} con un score/popularidad de {movie[1]}"
 
@@ -85,7 +80,6 @@ def votos_titulo(title: str):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         movie = conn.execute("SELECT release_year, vote_count, vote_average FROM movies WHERE title = ?", (title,)).fetchone()
-        print(movie)
 
     if movie[1] > 2000:
         return f"La película {title} fue estrenada en el año {movie[0]}. La misma cuenta con un total de {movie[1]} valoraciones, con un promedio de {movie[2]}"
@@ -102,7 +96,6 @@ def get_actor(name_actor: str):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         actor = conn.execute("SELECT movies, revenue FROM actors WHERE [cast] = ?", (name_actor,)).fetchone()
-        print(actor)
 
     return f"El actor {name_actor} ha participado de {actor[0]} cantidad de filmaciones, el mismo ha conseguido un revenue de {actor[1]} con un promedio de {actor[1]/actor[0]} por filmación"
 
@@ -153,7 +146,6 @@ def get_director(name_director: str):
         cursor = conn.cursor()
         director = conn.execute("SELECT m.title, m.release_date, m.return, m.budget, m.revenue, m.vote_average FROM directors d JOIN movies m ON d.id = m.id WHERE d.name = ?", (name_director,)).fetchall()
         success = conn.execute("SELECT avg(vote_average) FROM directors d JOIN movies m ON d.id = m.id WHERE d.name = ?", (name_director,)).fetchall()
-        print(director)
 
     director_dic = {
         'Name': name_director,
