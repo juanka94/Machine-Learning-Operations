@@ -67,12 +67,12 @@ def score_titulo(title: str):
     Ingresa el nombre de una pelicula y regresa el año en que fue estrenada junto con el score obtenido.
     """
 
-    movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        movie = conn.execute("SELECT release_year, vote_average FROM movies WHERE title = ?", (title,)).fetchone()
+        print(movie)
 
-    movie_index = movies.index.get_indexer_for((movies[movies.title == title].index)).tolist()
-    movie = movies.iloc[movie_index[0]]
-
-    return f"La película {movie['title']} fue estrenada en el año {movie['release_year']} con un score/popularidad de {movie['vote_average']}"
+    return f"La película {title} fue estrenada en el año {movie[0]} con un score/popularidad de {movie[1]}"
 
 
 @app.get('/votos_titulo/{title}')
