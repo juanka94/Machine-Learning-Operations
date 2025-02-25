@@ -1,7 +1,6 @@
 import sqlite3
 import itertools
 import ast
-import numpy as np
 import pandas as pd
 
 try:
@@ -105,41 +104,65 @@ try:
     movies_to_load = movies[~ids_on_db]
     movies_to_load[['genres','production_companies','production_countries','spoken_languages']] = movies_to_load[['genres','production_companies','production_countries','spoken_languages']].map(ast.literal_eval)
 
-    # Cargamos genres
-    genres = movies_to_load['genres']
-    flattened_list = list(itertools.chain(*genres))
-    genres = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
-    genres.drop('id', axis=1, inplace=True)
-    genres.to_sql(name='genres', con=conn, if_exists='replace')
+    #Validamos que existan datos a cargar
+    if not movies_to_load.empty:
+        # Cargamos genres
+        genres = movies_to_load['genres']
+        flattened_list = list(itertools.chain(*genres))
+        genres = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
+        genres.drop('id', axis=1, inplace=True)
+        genres.to_sql(name='genres', con=conn, if_exists='replace')
 
-    #Cargamos languages
-    languages = movies_to_load['spoken_languages']
-    flattened_list = list(itertools.chain(*languages))
-    languages = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
-    languages.rename(columns={'iso_639_1': 'code'}, inplace=True)
-    languages.to_sql(name='languages', con=conn, if_exists='replace')
+        print('Tabla genres cargada con exito')
 
-    #Cargamos companies
-    companies = movies_to_load['production_companies']
-    flattened_list = list(itertools.chain(*companies))
-    companies = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
-    companies.drop('id', axis=1, inplace=True)
-    companies.to_sql(name='companies', con=conn, if_exists='replace')
+        #Cargamos languages
+        languages = movies_to_load['spoken_languages']
+        flattened_list = list(itertools.chain(*languages))
+        languages = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
+        languages.rename(columns={'iso_639_1': 'code'}, inplace=True)
+        languages.to_sql(name='languages', con=conn, if_exists='replace')
 
-    #Cargamos countries
-    countries = movies_to_load['production_countries']
-    flattened_list = list(itertools.chain(*countries))
-    countries = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
-    countries.rename(columns={'iso_3166_1': 'code'}, inplace=True)
-    countries.to_sql(name='countries', con=conn, if_exists='replace')
+        print('Tabla lenguages cargada con exito')
 
-    #Cargamos movies
-    movies_to_load.drop(['belongs_to_collection', 'original_language', 'genres','production_companies','production_countries','spoken_languages'], axis=1, inplace=True)
-    movies_to_load.to_sql(name='movies', con=conn, if_exists='replace')
-    
-    result = cursor.execute("""SELECT * From movies""").fetchall()
+        #Cargamos companies
+        companies = movies_to_load['production_companies']
+        flattened_list = list(itertools.chain(*companies))
+        companies = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
+        companies.drop('id', axis=1, inplace=True)
+        companies.to_sql(name='companies', con=conn, if_exists='replace')
 
-    print(result)
+        print('Tabla companies cargada con exito')
+
+        #Cargamos countries
+        countries = movies_to_load['production_countries']
+        flattened_list = list(itertools.chain(*countries))
+        countries = pd.DataFrame(flattened_list).drop_duplicates(subset='name').reset_index(drop=True)
+        countries.rename(columns={'iso_3166_1': 'code'}, inplace=True)
+        countries.to_sql(name='countries', con=conn, if_exists='replace')
+
+        print('Tabla countries cargada con exito')
+
+        #Cargamos movies
+        movies_to_load.drop(['belongs_to_collection', 'original_language', 'genres','production_companies','production_countries','spoken_languages'], axis=1, inplace=True)
+        movies_to_load.to_sql(name='movies', con=conn, if_exists='replace')
+
+        print('Tabla mocies cargada con exito')
+        
+        # Abrir CSV actores
+        actors = pd.read_csv('./assets/actors.csv', delimiter=',', encoding='utf-8')
+
+        #Cargamos actores
+        actors.to_sql(name='actors', con=conn, if_exists='replace')
+
+        print('Tabla actores cargada con exito')
+
+        # Abrir CSV directores
+        directors = pd.read_csv('./assets/directors.csv', delimiter=',', encoding='utf-8')
+
+        #Cargamos movies
+        directors.to_sql(name='directors', con=conn, if_exists='replace')
+
+        print('Tabla directores cargada con exito')
 
     conn.commit()
  
