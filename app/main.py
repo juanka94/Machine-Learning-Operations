@@ -48,16 +48,15 @@ def cantidad_filmaciones_dia(name_day: str):
     cantidad = 0
     count = 0
     weekdays = {
-        'lunes': 0, 'martes': 1, 'miercoles': 2, 'jueves': 3, 'viernes': 4, 'sabado': 5, 'domingo': 6
+        'lunes': '1', 'martes': '2', 'miercoles': '3', 'jueves': '4', 'viernes': '5', 'sabado': '6', 'domingo': '0'
     }
 
     num_weekday = weekdays.get(name_day)
 
-    movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
-
-    release_weekdays = pd.to_datetime(movies['release_date']).dt.weekday
-
-    cantidad = [count + 1 for weekday in release_weekdays if weekday == num_weekday]
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cantidad = conn.execute("SELECT count(*) FROM movies WHERE strftime('%w', release_date) = ?", (num_weekday,)).fetchone()
+        print(cantidad)
 
     return f'{sum(cantidad)} cantidad de películas fueron estrenadas en los días {name_day}'
 
