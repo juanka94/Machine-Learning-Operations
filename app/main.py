@@ -82,15 +82,15 @@ def votos_titulo(title: str):
     en caso de tener menos de 2000 valoraciones solo se envia mensaje que dicha pelicula no tiene las suficientes valoraciones.
     """
 
-    movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        movie = conn.execute("SELECT release_year, vote_count, vote_average FROM movies WHERE title = ?", (title,)).fetchone()
+        print(movie)
 
-    movie_index = movies.index.get_indexer_for((movies[movies.title == title].index)).tolist()
-    movie = movies.iloc[movie_index[0]]
-
-    if movie['vote_count'] > 2000:
-        return f"La película {movie['title']} fue estrenada en el año {movie['release_year']}. La misma cuenta con un total de {movie['vote_count']} valoraciones, con un promedio de {movie['vote_average']}"
+    if movie[1] > 2000:
+        return f"La película {title} fue estrenada en el año {movie[0]}. La misma cuenta con un total de {movie[1]} valoraciones, con un promedio de {movie[2]}"
     else:
-        return f"La película {movie['title']} no cumple con las 2000 minimas valoraciones para arrojar el resultado"
+        return f"La película {title} no cumple con las 2000 minimas valoraciones para arrojar el resultado"
     
 
 @app.get('/get_actor/{name_actor}')
