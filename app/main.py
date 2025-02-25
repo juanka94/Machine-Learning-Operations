@@ -1,3 +1,4 @@
+import sqlite3
 import pandas as pd
 import numpy as np
 
@@ -8,6 +9,7 @@ from fuzzywuzzy import process
 MOVIES_DATASET_PATH = '../assets/movies.csv'
 ACTORS_DATASET_PATH = '../assets/actors.csv'
 DIRECTORS_DATASET_PATH = '../assets/directors.csv'
+DB_PATH = '../DB/cinema.db'
 
 app = FastAPI()
 
@@ -21,23 +23,19 @@ def cantidad_filmaciones_mes(name_month: str):
     """
     Se ingresa el nombre del mes y regresa la cantidad de peliculas que se estrenaron en dicho mes.
     """
-
     cantidad = 0
-    count = 0
     months = {
-        'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5, 'junio': 6,
-        'julio': 7, 'agosto': 8, 'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+        'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04', 'mayo': '05', 'junio': '06',
+        'julio': '07', 'agosto': '08', 'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
     }
-
 
     num_month = months.get(name_month)
 
-    movies = pd.read_csv(MOVIES_DATASET_PATH, delimiter=',', encoding='utf-8')
-
-    release_months = pd.to_datetime(movies['release_date']).dt.month
-
-    cantidad = [count + 1 for month in release_months if month == num_month]
-
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cantidad = conn.execute("SELECT count(*) FROM movies WHERE strftime('%m', release_date) = ?", (num_month,)).fetchone()
+        print(cantidad)
+    
     return f'{sum(cantidad)} cantidad de películas fueron estrenadas en el mes de {name_month}'
 
 

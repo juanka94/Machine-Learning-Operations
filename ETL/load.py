@@ -146,7 +146,7 @@ try:
         movies_to_load.drop(['belongs_to_collection', 'original_language', 'genres','production_companies','production_countries','spoken_languages'], axis=1, inplace=True)
         movies_to_load.to_sql(name='movies', con=conn, if_exists='replace')
 
-        print('Tabla mocies cargada con exito')
+        print('Tabla movies cargada con exito')
         
         # Abrir CSV actores
         actors = pd.read_csv('./assets/actors.csv', delimiter=',', encoding='utf-8')
