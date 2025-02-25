@@ -99,12 +99,12 @@ def get_actor(name_actor: str):
     Ingresa el nombre de un actor y regresa la cantidad de peliculas en las que ha participado junto con el revenue total que ha obtenido en dichas peliculas.
     """
 
-    actors = pd.read_csv(ACTORS_DATASET_PATH, delimiter=',', encoding='utf-8')
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        actor = conn.execute("SELECT movies, revenue FROM actors WHERE [cast] = ?", (name_actor,)).fetchone()
+        print(actor)
 
-    actor_index = actors.index.get_indexer_for((actors[actors.cast == name_actor].index)).tolist()
-    actor = actors.iloc[actor_index[0]]
-
-    return f"El actor {actor['cast']} ha participado de {actor['movies']} cantidad de filmaciones, el mismo ha conseguido un revenue de {actor['revenue']} con un promedio de {actor['revenue']/actor['movies']} por filmación"
+    return f"El actor {name_actor} ha participado de {actor[0]} cantidad de filmaciones, el mismo ha conseguido un revenue de {actor[1]} con un promedio de {actor[1]/actor[0]} por filmación"
 
 
 @app.get('/get_director/{name_director}')
